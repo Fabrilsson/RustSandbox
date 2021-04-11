@@ -34,6 +34,7 @@ pub fn run(){
     println!("Max i64: {}", std::i64::MAX);
 
     //Boolean
-    let isActive = true;
-    println!("{:?}, (xyz)")
+    let is_active = true;
+
+    println!("{:?}", (x, y, z, is_active));
 }

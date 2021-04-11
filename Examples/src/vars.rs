@@ -11,10 +11,10 @@ pub fn run(){
     println!("My name is {} and I am {}", name, age);
 
     //Define constants
-    const id: u8 = 001;
-    println!("ID: {}", id);
+    const ID: u8 = 001;
+    println!("ID: {}", ID);
 
     //Assign multiple vars
-    let (myName, myAge) = ("Fabrício", 24);
-    println!("{} is {}", myName, myAge);
+    let (my_name, my_age) = ("Fabrício", 24);
+    println!("{} is {}", my_name, my_age);
 }
