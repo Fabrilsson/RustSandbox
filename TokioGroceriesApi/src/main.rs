@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 
-static mut identifier: i64 = 0;
+static mut IDENTIFIER: i64 = 0;
 
 type Items = HashMap<i64, Item>;
 
@@ -16,7 +16,8 @@ struct Id {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 struct Item {
     name: String,
-    quantity: i32
+    quantity: i32,
+    value: f64
 }
 
 #[derive(Clone)]
@@ -38,8 +39,8 @@ async fn update_grocery_list(
     ) -> Result<impl warp::Reply, warp::Rejection> {
 
         unsafe {
-            identifier = identifier + 1;
-            store.grocery_list.write().insert(identifier, Item { name: item.name, quantity: item.quantity });
+            IDENTIFIER = IDENTIFIER + 1;
+            store.grocery_list.write().insert(IDENTIFIER, Item { name: item.name, quantity: item.quantity, value: item.value });
         }
 
         Ok(warp::reply::with_status(
