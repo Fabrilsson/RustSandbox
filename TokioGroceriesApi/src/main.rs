@@ -4,25 +4,21 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Item {
+    pub id: i64,
+    name: String,
+    quantity: i32,
+    value: f64,
+}
+
 static mut IDENTIFIER: i64 = 0;
 
 type Items = HashMap<i64, Item>;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-struct Id {
-    id: i64
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-struct Item {
-    name: String,
-    quantity: i32,
-    value: f64
-}
-
 #[derive(Clone)]
 struct Store {
-  grocery_list: Arc<RwLock<Items>>
+  grocery_list: Arc<RwLock<Items>>,
 }
 
 impl Store {
@@ -40,7 +36,15 @@ async fn update_grocery_list(
 
         unsafe {
             IDENTIFIER = IDENTIFIER + 1;
-            store.grocery_list.write().insert(IDENTIFIER, Item { name: item.name, quantity: item.quantity, value: item.value });
+            store.grocery_list.write().insert(
+                IDENTIFIER,
+                Item 
+                { 
+                    id: IDENTIFIER,
+                    name: item.name,
+                    quantity: item.quantity,
+                    value: item.value 
+                });
         }
 
         Ok(warp::reply::with_status(
@@ -50,10 +54,10 @@ async fn update_grocery_list(
 }
 
 async fn delete_grocery_list_item(
-    id: Id,
+    id: i64,
     store: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        store.grocery_list.write().remove(&id.id);
+        store.grocery_list.write().remove(&id);
 
 
         Ok(warp::reply::with_status(
@@ -78,7 +82,7 @@ async fn get_grocery_list(
         ))
 }
 
-fn delete_json() -> impl Filter<Extract = (Id,), Error = warp::Rejection> + Clone {
+fn delete_json() -> impl Filter<Extract = (i64,), Error = warp::Rejection> + Clone {
     // When accepting a body, we want a JSON body
     // (and to reject huge payloads)...
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
