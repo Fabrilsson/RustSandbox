@@ -6,7 +6,7 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Item {
-    pub id: i64,
+    id: i64,
     name: String,
     quantity: i32,
     value: f64,
@@ -14,7 +14,7 @@ pub struct Item {
 
 static mut IDENTIFIER: i64 = 0;
 
-type Items = HashMap<i64, Item>;
+type Items = Vec<Item>;
 
 #[derive(Clone)]
 struct Store {
@@ -24,7 +24,7 @@ struct Store {
 impl Store {
     fn new() -> Self {
         Store {
-            grocery_list: Arc::new(RwLock::new(HashMap::new())),
+            grocery_list: Arc::new(RwLock::new(Vec::new())),
         }
     }
 }
@@ -36,8 +36,7 @@ async fn update_grocery_list(
 
         unsafe {
             IDENTIFIER = IDENTIFIER + 1;
-            store.grocery_list.write().insert(
-                IDENTIFIER,
+            store.grocery_list.write().push(
                 Item 
                 { 
                     id: IDENTIFIER,
@@ -57,8 +56,9 @@ async fn delete_grocery_list_item(
     id: i64,
     store: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        store.grocery_list.write().remove(&id);
+        let mut r = store.grocery_list.write();
 
+        r.retain(|a| a.id != id);
 
         Ok(warp::reply::with_status(
             "Removed item from grocery list",
@@ -67,14 +67,14 @@ async fn delete_grocery_list_item(
 }
 
 async fn get_grocery_list(
-    store: Store
+    _context: Store
     ) -> Result<impl warp::Reply, warp::Rejection> {
-        let mut result = HashMap::new();
-        let r = store.grocery_list.read();
+        let mut result = Vec::new();
+        let r = _context.grocery_list.read();
 
 
-        for (key,value) in r.iter() {
-            result.insert(key, value);
+        for (value) in r.iter() {
+            result.push(value);
         }
 
         Ok(warp::reply::json(
