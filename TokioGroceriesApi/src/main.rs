@@ -1,6 +1,5 @@
 use warp::{http, Filter};
 use parking_lot::RwLock;
-use std::collections::HashMap;
 use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 
@@ -73,7 +72,7 @@ async fn get_grocery_list(
         let r = _context.grocery_list.read();
 
 
-        for (value) in r.iter() {
+        for value in r.iter() {
             result.push(value);
         }
 
