@@ -1,6 +1,6 @@
 use serde::Serialize;
-use chrono::{DateTime};
 
+#[derive(Serialize)]
 pub enum TaskState {
     NotStarted,
     InProgress,
@@ -16,8 +16,8 @@ pub struct Task {
     task_type: String,
     task_state: TaskState,
     task_description: String,
-    created_on: DateTime,
-    completed_on: Option<DateTime>
+    created_on: String,
+    completed_on: Option<String>
 }
 
 impl Task {
@@ -27,8 +27,8 @@ impl Task {
             task_type,
             task_state: TaskState::NotStarted,
             task_description,
-            created_on: chrono::offset::Utc::now(),
-            completed_on: Option
+            created_on: chrono::offset::Utc::now().to_string(),
+            completed_on: None
         }
     }
 }
