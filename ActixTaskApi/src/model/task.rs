@@ -1,6 +1,8 @@
 use serde::Serialize;
+use uuid::Uuid;
+use strum_macros::{EnumString, Display};
 
-#[derive(Serialize)]
+#[derive(Serialize, Display)]
 pub enum TaskState {
     NotStarted,
     InProgress,
@@ -12,18 +14,18 @@ pub enum TaskState {
 
 #[derive(Serialize)]
 pub struct Task {
-    task_id: String,
-    task_type: String,
-    task_state: TaskState,
-    task_description: String,
-    created_on: String,
-    completed_on: Option<String>
+    pub task_id: String,
+    pub task_type: String,
+    pub task_state: TaskState,
+    pub task_description: String,
+    pub created_on: String,
+    pub completed_on: Option<String>
 }
 
 impl Task {
-    pub fn new(task_id: String, task_type: String, task_description: String) -> Task {
+    pub fn new(task_type: String, task_description: String) -> Task {
         Task {
-            task_id,
+            task_id: Uuid::new_v4().to_string(),
             task_type,
             task_state: TaskState::NotStarted,
             task_description,

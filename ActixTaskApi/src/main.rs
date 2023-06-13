@@ -4,14 +4,11 @@ mod repositories;
 mod database;
 
 use actix_web::{HttpServer, App, web::Data, middleware::Logger};
-use std::error::Error;
-use sqlx::{PgPool};
+use repositories::task_repository::{TaskRepository};
 
 use controllers::task_controller::{
-    get_task
-};
-use database::db::{
-    create_pool
+    get_task,
+    post_task
 };
 
 #[actix_web::main]
@@ -22,18 +19,21 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init();
 
-    let pool: PgPool = create_pool().await.expect("Failed to create pool");
+    let repository: TaskRepository = TaskRepository::new().await;
 
-    sqlx::migrate!("./migrations").run(&pool).await.expect("Failed to execute migrations");
+    repository.migrate().await.unwrap();
 
     HttpServer::new(move || {
 
         let logger = Logger::default();
 
+        let data = Data::new(repository.clone());
+
         App::new()
-        .app_data(pool.clone())
+        .app_data(data)
         .wrap(logger)
         .service(get_task)
+        .service(post_task)
     })
     .bind("127.0.0.1:8080")?
     .run()

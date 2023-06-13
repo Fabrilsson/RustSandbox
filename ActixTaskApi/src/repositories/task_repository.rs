@@ -3,8 +3,9 @@ use crate::model::task::{Task};
 
 use sqlx::{PgPool};
 
+#[derive(Clone)]
 pub struct TaskRepository {
-    pool: PgPool
+    pub pool: PgPool
 }
 
 impl TaskRepository {
@@ -12,7 +13,25 @@ impl TaskRepository {
         TaskRepository { pool: create_pool().await.expect("Failed to create pool") }
     }
 
+    pub async fn migrate(&self) -> Result<(), DBError> {
+        sqlx::migrate!("./migrations").run(&self.pool).await.expect("Failed to execute migrations");
+        Ok(())
+    }
+
     pub async fn insert_task(&self, task: Task) -> Result<(), DBError> {
+        let query = "INSERT INTO tasks (task_id, task_type, task_state, task_description, created_on, completed_on) VALUES ($1, $2, $3, $4, $5, $6)";
+
+        sqlx::query(query)
+        .bind(task.task_id)
+        .bind(task.task_type)
+        .bind(task.task_state.to_string())
+        .bind(task.task_description)
+        .bind(task.created_on)
+        .bind(task.completed_on)
+        .execute(&self.pool)
+        .await
+        .unwrap();
+
         Ok(())
     }
 }

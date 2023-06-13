@@ -1,5 +1,6 @@
 use sqlx::{PgPool};
 
+#[derive(Debug)]
 pub struct DBError;
 
 pub async fn create_pool() -> Result<PgPool, sqlx::Error> {
