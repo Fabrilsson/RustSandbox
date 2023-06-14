@@ -33,4 +33,8 @@ impl Task {
             completed_on: None
         }
     }
+
+    pub fn get_id(&self) -> String {
+        self.task_id.clone()
+    }
 }

@@ -58,9 +58,10 @@ pub async fn get_task(id: Path<TaskIdentifier>, repository: Data<TaskRepository>
 pub async fn post_task(repository: Data<TaskRepository>, task: Json<TaskPostRequest>) -> Result<Json<TaskIdentifier>, TaskError> {
 
     let task = Task::new(task.task_type.clone(), task.task_description.clone());
+    let identifier = task.get_id();
 
     match repository.insert_task(task).await {
-        Ok(()) => Ok(Json(TaskIdentifier { task_id: String::from("test") })),
+        Ok(()) => Ok(Json(TaskIdentifier { task_id: String::from(identifier) })),
         Err(_) => Err(TaskError::TaskCreationFailure)
     }
 }

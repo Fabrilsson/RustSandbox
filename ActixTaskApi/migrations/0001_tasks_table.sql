@@ -3,8 +3,8 @@ CREATE TABLE tasks (
     task_type varchar(255) not null,
     task_state varchar(255) not null,
     task_description varchar not null,
-    created_on TIMESTAMP NOT NULL,
-    completed_on TIMESTAMP NULL
+    created_on varchar(64) NOT NULL,
+    completed_on varchar(64) NULL
 );
 
 create unique index task_id_idx on tasks (task_id);

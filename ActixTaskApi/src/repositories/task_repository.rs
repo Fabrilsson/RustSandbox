@@ -2,6 +2,7 @@ use crate::database::db::{DBError, create_pool};
 use crate::model::task::{Task};
 
 use sqlx::{PgPool};
+use chrono::DateTime;
 
 #[derive(Clone)]
 pub struct TaskRepository {
@@ -19,7 +20,7 @@ impl TaskRepository {
     }
 
     pub async fn insert_task(&self, task: Task) -> Result<(), DBError> {
-        let query = "INSERT INTO tasks (task_id, task_type, task_state, task_description, created_on, completed_on) VALUES ($1, $2, $3, $4, $5, $6)";
+        let query = "INSERT INTO tasks (task_id, task_type, task_state, task_description, created_on) VALUES ($1, $2, $3, $4, $5)";
 
         sqlx::query(query)
         .bind(task.task_id)
@@ -27,7 +28,6 @@ impl TaskRepository {
         .bind(task.task_state.to_string())
         .bind(task.task_description)
         .bind(task.created_on)
-        .bind(task.completed_on)
         .execute(&self.pool)
         .await
         .unwrap();
