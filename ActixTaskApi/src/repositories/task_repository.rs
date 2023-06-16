@@ -1,7 +1,10 @@
-use crate::database::db::{DBError, create_pool};
-use crate::model::task::{Task};
+use std::collections::binary_heap;
+use std::str::FromStr;
 
-use sqlx::{PgPool};
+use crate::database::db::{DBError, create_pool};
+use crate::model::task::{Task, TaskState};
+
+use sqlx::{PgPool, Row};
 use chrono::DateTime;
 
 #[derive(Clone)]
@@ -19,6 +22,51 @@ impl TaskRepository {
         Ok(())
     }
 
+    pub async fn get_tasks(&self, skip: &i32, take: &i32) -> Result<Vec<Task>, DBError> {
+        let query = "SELECT * FROM tasks LIMIT $1 OFFSET $2";
+
+        let rows = sqlx::query(query)
+        .bind(skip)
+        .bind(take)
+        .fetch_all(&self.pool)
+        .await
+        .unwrap();
+
+        let tasks = rows.iter().map(|row| {
+            Task {
+                task_id: row.get("task_id"),
+                task_type: row.get("task_type"),
+                task_state: TaskState::from_str(row.get("task_state")).unwrap(),
+                task_description: row.get("task_description"),
+                created_on: row.get("created_on"),
+                completed_on: row.get("completed_on"),
+            }
+        }).collect();
+
+        Ok(tasks)
+    }
+
+    pub async fn get_task(&self, task_id: &String) -> Result<Task, DBError> {
+        let query = "SELECT * FROM tasks WHERE task_id = $1";
+
+        let row = sqlx::query(query)
+        .bind(task_id)
+        .fetch_one(&self.pool)
+        .await
+        .unwrap();
+
+        let task = Task {
+            task_id: row.get("task_id"),
+            task_type: row.get("task_type"),
+            task_state: TaskState::from_str(row.get("task_state")).unwrap(),
+            task_description: row.get("task_description"),
+            created_on: row.get("created_on"),
+            completed_on: row.get("completed_on"),
+        };
+
+        Ok(task)
+    }
+
     pub async fn insert_task(&self, task: Task) -> Result<(), DBError> {
         let query = "INSERT INTO tasks (task_id, task_type, task_state, task_description, created_on) VALUES ($1, $2, $3, $4, $5)";
 
@@ -34,4 +82,5 @@ impl TaskRepository {
 
         Ok(())
     }
+
 }

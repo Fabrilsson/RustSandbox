@@ -3,7 +3,7 @@ use actix_web::{
     post,
     put,
     error::ResponseError,
-    web::{Path, Json, Data},
+    web::{Path, Json, Data, Query},
     HttpResponse,
     http::{header::ContentType, StatusCode}
 };
@@ -16,6 +16,12 @@ use crate::{repositories::task_repository::TaskRepository, model::task::{Task, T
 #[derive(Serialize, Deserialize)]
 pub struct TaskIdentifier {
     task_id: String
+}
+
+#[derive(Deserialize)]
+pub struct Paging {
+    skip: i32,
+    take: i32
 }
 
 #[derive(Deserialize)]
@@ -49,15 +55,26 @@ impl ResponseError for TaskError {
     }
 }
 
+#[get("/tasks")]
+pub async fn get_tasks(paging: Query<Paging>, repository: Data<TaskRepository>) -> Json<Vec<Task>> {
+    let page = paging.into_inner();
+
+    let tasks = repository.get_tasks(&page.skip, &page.take).await.unwrap();
+
+    Json(tasks)
+}
+
 #[get("/task/{task_id}")]
-pub async fn get_task(id: Path<TaskIdentifier>, repository: Data<TaskRepository>) -> Json<String> {
-    Json(id.into_inner().task_id)
+pub async fn get_task(id: Path<TaskIdentifier>, repository: Data<TaskRepository>) -> Json<Task> {
+    let task = repository.get_task(&id.into_inner().task_id).await.unwrap();
+
+    Json(task)
 }
 
 #[post("/task")]
-pub async fn post_task(repository: Data<TaskRepository>, task: Json<TaskPostRequest>) -> Result<Json<TaskIdentifier>, TaskError> {
+pub async fn post_task(repository: Data<TaskRepository>, task_request: Json<TaskPostRequest>) -> Result<Json<TaskIdentifier>, TaskError> {
 
-    let task = Task::new(task.task_type.clone(), task.task_description.clone());
+    let task = Task::new(task_request.task_type.clone(), task_request.task_description.clone());
     let identifier = task.get_id();
 
     match repository.insert_task(task).await {
