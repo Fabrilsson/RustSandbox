@@ -7,6 +7,7 @@ use actix_web::{HttpServer, App, web::Data, middleware::Logger};
 use repositories::task_repository::{TaskRepository};
 
 use controllers::task_controller::{
+    get_tasks,
     get_task,
     post_task
 };
@@ -32,6 +33,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
         .app_data(data)
         .wrap(logger)
+        .service(get_tasks)
         .service(get_task)
         .service(post_task)
     })

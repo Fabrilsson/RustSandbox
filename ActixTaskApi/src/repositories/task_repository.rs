@@ -26,8 +26,8 @@ impl TaskRepository {
         let query = "SELECT * FROM tasks LIMIT $1 OFFSET $2";
 
         let rows = sqlx::query(query)
-        .bind(skip)
         .bind(take)
+        .bind(skip)
         .fetch_all(&self.pool)
         .await
         .unwrap();
@@ -67,20 +67,20 @@ impl TaskRepository {
         Ok(task)
     }
 
-    pub async fn insert_task(&self, task: Task) -> Result<(), DBError> {
+    pub async fn insert_task<'s>(&'s self, task: Task) -> Result<Task, DBError> {
         let query = "INSERT INTO tasks (task_id, task_type, task_state, task_description, created_on) VALUES ($1, $2, $3, $4, $5)";
 
         sqlx::query(query)
-        .bind(task.task_id)
-        .bind(task.task_type)
-        .bind(task.task_state.to_string())
-        .bind(task.task_description)
-        .bind(task.created_on)
+        .bind(&task.task_id)
+        .bind(&task.task_type)
+        .bind(&task.task_state.to_string())
+        .bind(&task.task_description)
+        .bind(&task.created_on)
         .execute(&self.pool)
         .await
         .unwrap();
 
-        Ok(())
+        Ok(task)
     }
 
 }

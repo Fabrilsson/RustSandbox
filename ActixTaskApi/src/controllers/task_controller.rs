@@ -64,21 +64,20 @@ pub async fn get_tasks(paging: Query<Paging>, repository: Data<TaskRepository>) 
     Json(tasks)
 }
 
-#[get("/task/{task_id}")]
-pub async fn get_task(id: Path<TaskIdentifier>, repository: Data<TaskRepository>) -> Json<Task> {
-    let task = repository.get_task(&id.into_inner().task_id).await.unwrap();
+#[get("/tasks/{task_id}")]
+pub async fn get_task(task_id: Path<TaskIdentifier>, repository: Data<TaskRepository>) -> Json<Task> {
+    let task = repository.get_task(&task_id.task_id).await.unwrap();
 
     Json(task)
 }
 
-#[post("/task")]
-pub async fn post_task(repository: Data<TaskRepository>, task_request: Json<TaskPostRequest>) -> Result<Json<TaskIdentifier>, TaskError> {
+#[post("/tasks")]
+pub async fn post_task(repository: Data<TaskRepository>, task_request: Json<TaskPostRequest>) -> Result<Json<Task>, TaskError> {
 
     let task = Task::new(task_request.task_type.clone(), task_request.task_description.clone());
-    let identifier = task.get_id();
 
     match repository.insert_task(task).await {
-        Ok(()) => Ok(Json(TaskIdentifier { task_id: String::from(identifier) })),
+        Ok(task) => Ok(Json(task)),
         Err(_) => Err(TaskError::TaskCreationFailure)
     }
 }
